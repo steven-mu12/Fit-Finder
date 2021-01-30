@@ -76,7 +76,8 @@ class page_displayer:
         self.list_of_objects = []  # Just to make sure everything is fully wiped from memory
 
     def welcome_screen(self,):
-        self.create_proper_text(0.5,0.5,"          Hello.\nWelcome to Fit Finder","white",(font_name,25))
+        self.create_proper_text(0.5,0.5,"Welcome to Fit Finder","white",(font_name,25))
+        self.create_proper_text(0.5,0.4,"Hello.","White",(font_name,25))
 
 from gradient import GradientFrame
 self=page_displayer()

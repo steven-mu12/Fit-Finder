@@ -29,6 +29,7 @@ class page_displayer:
         # Placing the background:
         self.main_frame.place(relx=0.5, rely=0, relwidth=1, relheight=1, anchor="n")
 
+        # PLACE HOLDER VALUES:
         self.root.bind("<Configure>", self.on_resize)
 
         self.list_of_objects = []  # we will store a list of objects so that we can delete things on the screen
@@ -76,10 +77,17 @@ class page_displayer:
 
     def click_anywhere(self):
         self.create_proper_text(0.5,0.8,"Click anywhere to continue","white",(font_name,8))
+
+    def mouse_clicked(self,event_object):
+        print(event_object)
+        print("working?")
     def welcome_screen(self,):
         self.create_proper_text(0.5,0.5,"Welcome to Fit Finder","white",(font_name,25))
         self.create_proper_text(0.5,0.4,"Hello.","White",(font_name,25))
         self.click_anywhere()
+        self.root.bind("<Button-1>", self.mouse_clicked)
+
+
 from gradient import GradientFrame
 self=page_displayer()
 self.welcome_screen()

@@ -2,7 +2,7 @@
 import tkinter as tk
 from gradient import GradientFrame
 
-font_name="Helvetica"
+font_name="Times New Roman"
 class page_displayer:
 
     def __init__(self):
@@ -14,7 +14,9 @@ class page_displayer:
 
         self.root = tk.Tk()  # Initializing root
         self.root.title("Something")  # setting window title name
-
+        width = self.root.winfo_screenwidth()
+        height = self.root.winfo_screenheight()
+        self.root.geometry(f'{width}x{height}')
         #initializing background:
 
 
@@ -73,13 +75,10 @@ class page_displayer:
 
         self.list_of_objects = []  # Just to make sure everything is fully wiped from memory
 
-    def welcome_screen(self,top_color,):
-        self.main_frame.create_text(
-
-        )
+    def welcome_screen(self,):
+        self.create_proper_text(0.5,0.5,"          Hello.\nWelcome to Fit Finder","white",(font_name,25))
 
 from gradient import GradientFrame
 self=page_displayer()
-
-self.create_proper_text(0.5,0.5,"white","white",(font_name,50))
+self.welcome_screen()
 self.screen.mainloop()

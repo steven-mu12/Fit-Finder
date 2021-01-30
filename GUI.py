@@ -26,23 +26,45 @@ class page_displayer:
         # Placing the background:
         self.main_frame.place(relx=0.5, rely=0, relwidth=1, relheight=1, anchor="n")
 
-        self.main_frame.create_text(100,100,text="Click",fill="white")
         # PLACE HOLDER VALUES:
         self.root.bind("<Configure>", self.on_resize)
+        texst=self.main_frame.create_text(100,100,text="Click",fill="white")
 
         self.list_of_objects = []  # we will store a list of objects so that we can delete things on the screen
+        self.list_of_attributes_to_resize=[[100,100,"Click","White"]]
+        self.list_of_text_objects=[texst]
 
-    def on_resize(self):
-        self.WIDTH = self.root.winfo_screenwidth()
-        self.HEIGHT = self.root.winfo_screenheight()
+    def on_resize(self, event_object):
 
-        print("Working")
-    def clear_page(self):
+        updated=[]
+        updated_text_objects=[]
+        for text in self.list_of_attributes_to_resize:
+            x=text[0]
+            y=text[1]
+            written = text[2]
+            filling = text[3]
+
+            newx= (x/self.WIDTH) * event_object.width
+            newy= (y/self.HEIGHT) * event_object.height
+            new_formed=self.main_frame.create_text(newx,newy,text=written,fill=filling)
+            updated_text_objects.append(new_formed)
+            updated.append([newx,newy,written,filling])
+
+        for text in self.list_of_text_objects:
+            self.main_frame.delete(text)
+
+        self.list_of_attributes_to_resize=updated
+        self.list_of_text_objects=updated_text_objects
+        self.WIDTH=event_object.width
+        self.HEIGHT=event_object.height
+    def clear_page(self ):
         # This function deletes every object on the page. It will be used when transitioning between pages.
         for object in self.list_of_objects:
             object.destroy()
 
         self.list_of_objects = []  # Just to make sure everything is fully wiped from memory
+
+
 from gradient import GradientFrame
 self=page_displayer()
 

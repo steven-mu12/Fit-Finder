@@ -29,7 +29,6 @@ class page_displayer:
         # Placing the background:
         self.main_frame.place(relx=0.5, rely=0, relwidth=1, relheight=1, anchor="n")
 
-        # PLACE HOLDER VALUES:
         self.root.bind("<Configure>", self.on_resize)
 
         self.list_of_objects = []  # we will store a list of objects so that we can delete things on the screen

@@ -1,108 +1,119 @@
+from tkinter import Canvas
+from tkinter.constants import *
 
-import tkinter as tk
-from gradient import GradientFrame
+from PIL import Image, ImageDraw, ImageTk
 
-font_name="Segoe UI"
-class page_displayer:
-
-    def __init__(self):
-        global font_name
-        # self.BACKGROUND_COLOR = "#add8e6" #The background color
-        self.HEIGHT = 500 #This is the initial window size, everything will be resized if you change the size of the
-        # window
-        self.WIDTH = 800
-
-        self.root = tk.Tk()  # Initializing root
-        self.root.title("Something")  # setting window title name
-        width = self.root.winfo_screenwidth()
-        height = self.root.winfo_screenheight()
-        self.root.geometry(f'{width}x{height}')
-        #initializing background:
+# Python 2/3 compatibility
+try:
+    basestring
+except NameError:
+    basestring = str
 
 
-        self.screen = tk.Canvas(self.root, width=self.WIDTH, height=self.HEIGHT)
-        self.screen.pack()
+def hex2rgb(str_rgb):
+    try:
+        rgb = str_rgb[1:]
+
+        if len(rgb) == 6:
+            r, g, b = rgb[0:2], rgb[2:4], rgb[4:6]
+        elif len(rgb) == 3:
+            r, g, b = rgb[0] * 2, rgb[1] * 2, rgb[2] * 2
+        else:
+            raise ValueError()
+    except:
+        raise ValueError("Invalid value %r provided for rgb color." % str_rgb)
+
+    return tuple(int(v, 16) for v in (r, g, b))
 
 
-        self.main_frame = GradientFrame(self.root, from_color="#000000", to_color="#E74C3C", height=1000)
+class GradientFrame(Canvas):
 
-        # Placing the background:
-        self.main_frame.place(relx=0.5, rely=0, relwidth=1, relheight=1, anchor="n")
+    def __init__(self, master, from_color, to_color, width=None, height=None, orient=HORIZONTAL, steps=None, **kwargs):
+        Canvas.__init__(self, master, **kwargs)
+        if steps is None:
+            if orient == HORIZONTAL:
+                steps = height
+            else:
+                steps = width
 
-        # PLACE HOLDER VALUES:
-        self.root.bind("<Configure>", self.on_resize)
+        if isinstance(from_color, basestring):
+            from_color = hex2rgb(from_color)
 
-        self.list_of_objects = []  # we will store a list of objects so that we can delete things on the screen
-        self.list_of_attributes_to_resize=[]
-        self.list_of_text_objects=[]
+        if isinstance(to_color, basestring):
+            to_color = hex2rgb(to_color)
 
-        self.screen_index=0
-        self.screen_order = [self.welcome_screen,
-                        self.question1]
+        r, g, b = from_color
+        dr = float(to_color[0] - r) / steps
+        dg = float(to_color[1] - g) / steps
+        db = float(to_color[2] - b) / steps
 
-    def clear_text(self):
-        for text in self.list_of_text_objects:
-            self.main_frame.delete(text)
-        self.list_of_text_objects=[]
-    def create_proper_text(self,relx,rely,text,fill,font_tuple):
-        x=relx*self.WIDTH
-        y=rely*self.HEIGHT
-        params=[x,y,text,fill,font_tuple]
-        created=self.main_frame.create_text(x,y,text=text,fill=fill,font=font_tuple)
-        self.list_of_text_objects.append(created)
-        self.list_of_attributes_to_resize.append([x,y,text,fill,font_tuple])
-    def on_resize(self, event_object):
+        if orient == HORIZONTAL:
+            if height is None:
+                raise ValueError("height can not be None")
 
-        updated=[]
-        updated_text_objects=[]
-        for text in self.list_of_attributes_to_resize:
-            x=text[0]
-            y=text[1]
-            written = text[2]
-            filling = text[3]
-            font = text[4]
-            font_size=int(font[1])
-            newx= (x/self.WIDTH) * event_object.width
-            newy= (y/self.HEIGHT) * event_object.height
+            self.configure(height=height)
 
-            new_font=(font_name,int((font_size/(x*y))*(newx*newy)))
-            new_formed=self.main_frame.create_text(newx,newy,text=written,fill=filling,font=new_font)
-            updated_text_objects.append(new_formed)
-            updated.append([newx,newy,written,filling,new_font])
+            if width is not None:
+                self.configure(width=width)
 
-        for text in self.list_of_text_objects:
-            self.main_frame.delete(text)
+            img_height = height
+            img_width = self.winfo_screenwidth()
 
-        self.list_of_attributes_to_resize=updated
-        self.list_of_text_objects=updated_text_objects
-        self.WIDTH=event_object.width
-        self.HEIGHT=event_object.height
-    def clear_page(self ):
-        # This function deletes every object on the page. It will be used when transitioning between pages.
-        for object in self.list_of_objects:
-            object.destroy()
+            image = Image.new("RGB", (img_width, img_height), "#FFFFFF")
+            draw = ImageDraw.Draw(image)
 
-        self.list_of_objects = []  # Just to make sure everything is fully wiped from memory
+            for i in range(steps):
+                r, g, b = r + dr, g + dg, b + db
+                y0 = int(float(img_height * i) / steps)
+                y1 = int(float(img_height * (i + 1)) / steps)
 
-    def click_anywhere(self):
-        self.create_proper_text(0.5,0.8,"Click anywhere to continue","white",(font_name,8))
+                draw.rectangle((0, y0, img_width, y1), fill=(int(r), int(g), int(b)))
+        else:
+            if width is None:
+                raise ValueError("width can not be None")
+            self.configure(width=width)
 
-    def question1(self):
-        self.clear_page()
-        self.clear_text()
-        self.create_proper_text(relx=0.5,rely=0.5,text="Yaaa",fill="White",font_tuple=(font_name,20))
-    def mouse_clicked(self,even_object):
-        self.screen_order[self.screen_index]()
+            if height is not None:
+                self.configure(height=height)
+
+            img_height = self.winfo_screenheight()
+            img_width = width
+
+            image = Image.new("RGB", (img_width, img_height), "#FFFFFF")
+            draw = ImageDraw.Draw(image)
+
+            for i in range(steps):
+                r, g, b = r + dr, g + dg, b + db
+                x0 = int(float(img_width * i) / steps)
+                x1 = int(float(img_width * (i + 1)) / steps)
+
+                draw.rectangle((x0, 0, x1, img_height), fill=(int(r), int(g), int(b)))
+
+        self._gradient_photoimage = ImageTk.PhotoImage(image)
+
+        self.create_image(0, 0, anchor=NW, image=self._gradient_photoimage)
 
 
-    def welcome_screen(self,):
-        self.screen_index+=1
-        self.create_proper_text(0.5,0.5,"Welcome to Fit Finder","white",(font_name,25))
-        self.create_proper_text(0.5,0.4,"Hello.","White",(font_name,25))
-        self.click_anywhere()
-        self.root.bind("<Button-1>", self.mouse_clicked)
+# if __name__ == "__main__":
+#     from tkinter import Tk
+#     import tkinter as tk
+#     root = Tk()
+# 
+#     width = root.winfo_screenwidth()
+#     height = root.winfo_screenheight()
+#     # root.geometry(f'{width}x{height}')
+# 
+#     screen=tk.Canvas(root,width=width,height=height)
+# 
+#     # GradientFrame(root, from_color="#000000", to_color="#E74C3C", height=1000).pack(fill=X)
+#     screen.create_text(100,10,fill="darkblue",font="Times 20 italic bold",text="alpha_alpha "
+#                                                                           "two.")
+#     root.mainloop()
 
-from gradient import GradientFrame
-self=page_displayer()
-self.welcome_screen()
-self.screen.mainloop()
+    # question = tk.Label(screen,
+    #                     text="Are you sure you would like to quit?",
+    #                     font=("Helvetica", 15),
+    #                     )
+    #
+    # question.place(relx=0.5, rely=0.1, relheight=0.15, relwidth=0.7, anchor="n")
+    # root.mainloop()
